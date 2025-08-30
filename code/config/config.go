@@ -11,6 +11,8 @@ type Config struct {
 	Server   ServerConfig   `json:"server"`   // 服务器配置
 	Database DatabaseConfig `json:"database"` // 数据库配置
 	JWT      JWTConfig      `json:"jwt"`      // JWT配置
+	Redis    RedisConfig    `json:"redis"`    // Redis配置
+	SMS      SMSConfig      `json:"sms"`      // 短信服务配置
 }
 
 // ServerConfig 服务器配置
@@ -34,6 +36,23 @@ type JWTConfig struct {
 	Expire    int    `json:"expire"`     // 过期时间（秒）
 }
 
+// RedisConfig Redis配置
+type RedisConfig struct {
+	Host     string `json:"host"`     // Redis主机
+	Port     string `json:"port"`     // Redis端口
+	Password string `json:"password"` // Redis密码
+	DB       int    `json:"db"`       // Redis数据库编号
+}
+
+// SMSConfig 短信服务配置
+type SMSConfig struct {
+	AccessKeyID     string `json:"access_key_id"`     // 阿里云AccessKey ID
+	AccessKeySecret string `json:"access_key_secret"` // 阿里云AccessKey Secret
+	SignName        string `json:"sign_name"`         // 短信签名
+	TemplateCode    string `json:"template_code"`     // 短信模板代码
+	RegionID        string `json:"region_id"`         // 地域ID
+}
+
 // LoadConfig 加载应用配置
 func LoadConfig() *Config {
 	// 默认配置
@@ -52,6 +71,19 @@ func LoadConfig() *Config {
 		JWT: JWTConfig{
 			SecretKey: "your-secret-key",
 			Expire:    3600,
+		},
+		Redis: RedisConfig{
+			Host:     "localhost",
+			Port:     "6379",
+			Password: "",
+			DB:       0,
+		},
+		SMS: SMSConfig{
+			AccessKeyID:     "your-access-key-id",
+			AccessKeySecret: "your-access-key-secret",
+			SignName:        "your-sign-name",
+			TemplateCode:    "your-template-code",
+			RegionID:        "cn-hangzhou",
 		},
 	}
 
@@ -118,6 +150,56 @@ func loadFromEnv(config *Config) {
 		if expire, err := strconv.Atoi(expireStr); err == nil {
 			config.JWT.Expire = expire
 		}
+	}
+
+	// Redis配置
+	if host := os.Getenv("REDIS_HOST"); host != "" {
+		config.Redis.Host = host
+	}
+	if port := os.Getenv("REDIS_PORT"); port != "" {
+		config.Redis.Port = port
+	}
+	if password := os.Getenv("REDIS_PASSWORD"); password != "" {
+		config.Redis.Password = password
+	}
+	if dbStr := os.Getenv("REDIS_DB"); dbStr != "" {
+		if db, err := strconv.Atoi(dbStr); err == nil {
+			config.Redis.DB = db
+		}
+	}
+
+	// SMS配置
+	if accessKeyID := os.Getenv("SMS_ACCESS_KEY_ID"); accessKeyID != "" {
+		config.SMS.AccessKeyID = accessKeyID
+	}
+	if accessKeySecret := os.Getenv("SMS_ACCESS_KEY_SECRET"); accessKeySecret != "" {
+		config.SMS.AccessKeySecret = accessKeySecret
+	}
+	if signName := os.Getenv("SMS_SIGN_NAME"); signName != "" {
+		config.SMS.SignName = signName
+	}
+	if templateCode := os.Getenv("SMS_TEMPLATE_CODE"); templateCode != "" {
+		config.SMS.TemplateCode = templateCode
+	}
+	if regionID := os.Getenv("SMS_REGION_ID"); regionID != "" {
+		config.SMS.RegionID = regionID
+	}
+
+	// SMS配置
+	if accessKeyID := os.Getenv("SMS_ACCESS_KEY_ID"); accessKeyID != "" {
+		config.SMS.AccessKeyID = accessKeyID
+	}
+	if accessKeySecret := os.Getenv("SMS_ACCESS_KEY_SECRET"); accessKeySecret != "" {
+		config.SMS.AccessKeySecret = accessKeySecret
+	}
+	if signName := os.Getenv("SMS_SIGN_NAME"); signName != "" {
+		config.SMS.SignName = signName
+	}
+	if templateCode := os.Getenv("SMS_TEMPLATE_CODE"); templateCode != "" {
+		config.SMS.TemplateCode = templateCode
+	}
+	if regionID := os.Getenv("SMS_REGION_ID"); regionID != "" {
+		config.SMS.RegionID = regionID
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"login/cache"
 	"login/config"
 	"login/database"
 	"login/routes"
@@ -33,6 +34,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 初始化Redis
+	if err := cache.InitRedis(&cfg.Redis); err != nil {
+		hkvilog.Error("Redis初始化失败:", err)
+		os.Exit(1)
+	}
+	defer cache.CloseRedis()
+
 	// 设置Gin运行模式
 	gin.SetMode(cfg.Server.Mode)
 	
@@ -40,7 +48,7 @@ func main() {
 	r := gin.Default()
 
 	// 设置路由
-	routes.SetupRoutes(r)
+	routes.SetupRoutes(r, cfg)
 
 	// 构建服务器地址
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)

@@ -43,7 +43,12 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "注册成功",
-		"user":    user,
+		"user": models.UserResponse{
+			ID:        user.ID,
+			Username:  user.Username,
+			Phone:     user.Phone,
+			CreatedAt: user.CreatedAt,
+		},
 	})
 }
 
@@ -70,7 +75,15 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "登录成功",
-		"data":    response,
+		"data": models.LoginResponse{
+			Token: response.Token,
+			User: models.UserResponse{
+				ID:        response.User.ID,
+				Username:  response.User.Username,
+				Phone:     response.User.Phone,
+				CreatedAt: response.User.CreatedAt,
+			},
+		},
 	})
 }
 

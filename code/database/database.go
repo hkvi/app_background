@@ -59,8 +59,8 @@ func InitDatabase(cfg *config.DatabaseConfig) error {
 	}
 
 	// 设置连接池参数
-	db.SetMaxOpenConns(25)  // 最大连接数
-	db.SetMaxIdleConns(5)   // 最大空闲连接数
+	db.SetMaxOpenConns(25) // 最大连接数
+	db.SetMaxIdleConns(5)  // 最大空闲连接数
 
 	DB = db
 	hkvilog.Info("数据库连接成功")
@@ -105,17 +105,40 @@ func CreateTables() error {
 	// 创建用户表
 	createUserTable := `
 	CREATE TABLE IF NOT EXISTS users (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		username VARCHAR(50) UNIQUE NOT NULL,
-		password VARCHAR(255) NOT NULL,
+		id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		username VARCHAR(50)  NULL,
+		password VARCHAR(255) NULL,
+		phone VARCHAR(20) UNIQUE  NULL,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		INDEX idx_username (username),
+		INDEX idx_phone (phone)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`
 
 	_, err := DB.Exec(createUserTable)
 	if err != nil {
 		return fmt.Errorf("创建用户表失败: %v", err)
+	}
+
+	// 创建验证码表（用于记录历史，实际验证码存储在Redis中）
+	createSMSTable := `
+	CREATE TABLE IF NOT EXISTS sms_codes (
+		id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		phone VARCHAR(20) NOT NULL,
+		code VARCHAR(10) NOT NULL,
+		type ENUM('login', 'register', 'reset') NOT NULL,
+		used BOOLEAN DEFAULT FALSE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		expired_at TIMESTAMP NOT NULL,
+		INDEX idx_phone_type (phone, type),
+		INDEX idx_expired_at (expired_at)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	`
+
+	_, err = DB.Exec(createSMSTable)
+	if err != nil {
+		return fmt.Errorf("创建短信验证码表失败: %v", err)
 	}
 
 	hkvilog.Info("数据库表创建成功")
