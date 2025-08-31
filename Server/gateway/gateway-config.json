@@ -1,0 +1,22 @@
+{
+  "server": {
+    "port": "8080",
+    "mode": "debug"
+  },
+  "jwt": {
+    "access_secret_key": "your-access-secret-key-change-in-production",
+    "refresh_secret_key": "your-refresh-secret-key-change-in-production",
+    "access_expire": 900,
+    "refresh_expire": 86400
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379",
+    "password": "",
+    "db": 0
+  },
+  "business_api": {
+    "base_url": "http://localhost:8081",
+    "timeout": 30
+  }
+}
