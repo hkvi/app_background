@@ -1,0 +1,26 @@
+{
+  "server": {
+    "port": "8081",
+    "mode": "debug"
+  },
+  "database": {
+    "host": "localhost",
+    "port": "3306",
+    "username": "root",
+    "password": "password",
+    "dbname": "login_db"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379",
+    "password": "",
+    "db": 0
+  },
+  "sms": {
+    "access_key_id": "your-access-key-id",
+    "access_key_secret": "your-access-key-secret",
+    "sign_name": "your-sign-name",
+    "template_code": "your-template-code",
+    "region_id": "cn-hangzhou"
+  }
+}

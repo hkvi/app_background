@@ -1,0 +1,85 @@
+services:
+  # MySQL数据库服务
+  mysql:
+    image: mysql:latest
+    container_name: login_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: login_db
+      MYSQL_USER: login_user
+      MYSQL_PASSWORD: login_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - login_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis缓存服务
+  redis:
+    image: redis:latest
+    container_name: login_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - login_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 20s
+      retries: 10
+
+  # Go应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: login_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=login_user
+      - DB_PASSWORD=login_password
+      - DB_NAME=login_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+      - SMS_ACCESS_KEY_ID=your-access-key-id
+      - SMS_ACCESS_KEY_SECRET=your-access-key-secret
+      - SMS_SIGN_NAME=your-sign-name
+      - SMS_TEMPLATE_CODE=your-template-code
+      - SMS_REGION_ID=cn-hangzhou
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - login_network
+    healthcheck:
+      test: ["CMD", "/app/main", "-health-check"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  login_network:
+    driver: bridge
