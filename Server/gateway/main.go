@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"gateway/cache"
 	"gateway/config"
 	"gateway/routes"
 	"gateway/utils/hkvilog"
@@ -18,6 +19,8 @@ import (
 func main() {
 	// 加载配置
 	cfg := config.LoadConfig()
+
+	cache.InitRedis(&cfg.Redis)
 
 	// 设置Gin运行模式
 	gin.SetMode(cfg.Server.Mode)
